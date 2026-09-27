@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 小遊戲作品集0927</title>
+  <meta name="description" content="AI 小遊戲作品集0927 - 收錄琳鴿找堅果、琳鴿幸運拉霸機、國小六年級動物英文聽力大冒險等精選網頁互動遊戲。">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* CSS Variables & Theme Setup */
+    :root {
+      --font-main: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+      --bg-gradient: radial-gradient(circle at 15% 15%, #1e1e38 0%, #0d0e17 50%, #08080f 100%);
+      --bg-color: #0b0c16;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(22, 27, 46, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover-border: rgba(129, 140, 248, 0.4);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --header-bg: rgba(13, 14, 24, 0.85);
+      --badge-bg: rgba(99, 102, 241, 0.15);
+      --badge-text: #a5b4fc;
+      --tag-bg: rgba(255, 255, 255, 0.05);
+      --tag-border: rgba(255, 255, 255, 0.1);
+      --search-bg: rgba(255, 255, 255, 0.06);
+      --modal-bg: rgba(15, 17, 30, 0.95);
+      --modal-overlay: rgba(3, 4, 10, 0.75);
+    }
+
+    html.light {
+      --bg-gradient: radial-gradient(circle at 20% 20%, #f0f4ff 0%, #e2e8f8 50%, #f8fafc 100%);
+      --bg-color: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(226, 232, 240, 0.9);
+      --card-hover-border: rgba(99, 102, 241, 0.4);
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-glow: rgba(79, 70, 229, 0.25);
+      --header-bg: rgba(248, 250, 252, 0.88);
+      --badge-bg: rgba(79, 70, 229, 0.1);
+      --badge-text: #4338ca;
+      --tag-bg: rgba(241, 245, 249, 0.9);
+      --tag-border: rgba(203, 213, 225, 0.6);
+      --search-bg: rgba(255, 255, 255, 0.9);
+      --modal-bg: rgba(255, 255, 255, 0.98);
+      --modal-overlay: rgba(15, 23, 42, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-color);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-col;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Ambient Background Orbs */
+    .ambient-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+      animation: floatOrb 12s ease-in-out infinite alternate;
+    }
+    .orb-1 { top: -100px; left: -100px; background: #6366f1; }
+    .orb-2 { bottom: 10%; right: -150px; background: #ec4899; animation-duration: 16s; }
+    .orb-3 { top: 40%; left: 30%; background: #06b6d4; opacity: 0.12; animation-duration: 20s; }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(60px, 40px) scale(1.1); }
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header & Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 0;
+    }
+
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 6px 16px var(--primary-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    html.light .brand-text h1 {
+      background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.15rem;
+      transition: all 0.2s ease;
+    }
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
+      border-color: var(--primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 48px 0 32px;
+      text-align: center;
+    }
+
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: var(--badge-bg);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--badge-text);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .hero-chip .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+      line-height: 1.25;
+    }
+
+    .hero-gradient-text {
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 0 auto 28px;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* Controls Bar: Search & Categories */
+    .controls-wrapper {
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px 14px 46px;
+      border-radius: 16px;
+      background: var(--search-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      transition: all 0.25s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .filter-tab {
+      padding: 8px 18px;
+      border-radius: 9999px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .filter-tab:hover {
+      color: var(--text-main);
+      border-color: var(--card-hover-border);
+      transform: translateY(-1px);
+    }
+
+    .filter-tab.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    /* Games Showcase Grid */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 28px;
+      margin-bottom: 64px;
+    }
+
+    /* Game Card */
+    .game-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--card-hover-border);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 24px var(--primary-glow);
+    }
+
+    /* Card Banner Header */
+    .card-banner {
+      height: 180px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .banner-theme-lingo {
+      background: linear-gradient(135deg, #10b981 0%, #059669 40%, #047857 100%);
+    }
+
+    .banner-theme-slot {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 40%, #b45309 100%);
+    }
+
+    .banner-theme-quest {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 40%, #3730a3 100%);
+    }
+
+    .banner-bg-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.15;
+      background-image: radial-gradient(#ffffff 2px, transparent 2px);
+      background-size: 16px 16px;
+    }
+
+    .card-hero-icon {
+      font-size: 5rem;
+      filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.3));
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 2;
+    }
+
+    .game-card:hover .card-hero-icon {
+      transform: scale(1.15) rotate(6deg);
+    }
+
+    .card-badge-top {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 3;
+    }
+
+    /* Card Body */
+    .card-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .category-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 8px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--badge-text);
+    }
+
+    .file-tag {
+      font-size: 0.75rem;
+      font-family: monospace;
+      color: var(--text-muted);
+      background: var(--tag-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--tag-border);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 170px;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+
+    .card-description {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    /* Highlights Chips */
+    .feature-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 22px;
+    }
+
+    .feature-chip {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--tag-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--tag-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Card Actions */
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .btn-play {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+      color: #ffffff;
+      font-size: 0.98rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-play:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--primary-glow);
+      filter: brightness(1.08);
+    }
+
+    .btn-play:active {
+      transform: scale(0.98);
+    }
+
+    .btn-preview {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-preview:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--badge-bg);
+      transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    /* Game Preview Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-container {
+      background: var(--modal-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 960px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--tag-border);
+      background: var(--tag-bg);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .modal-btn:hover {
+      border-color: var(--primary);
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .modal-iframe-wrapper {
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .modal-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--card-border);
+      background: var(--header-bg);
+      padding: 32px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h2 {
+        font-size: 1.95rem;
+      }
+      .games-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .card-banner {
+        height: 150px;
+      }
+      .modal-container {
+        height: 94vh;
+        border-radius: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glow Background -->
+  <div class="ambient-glow orb-1"></div>
+  <div class="ambient-glow orb-2"></div>
+  <div class="ambient-glow orb-3"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">🎮</div>
+        <div class="brand-text">
+          <h1>AI 小遊戲作品集0927</h1>
+          <span class="brand-badge">HTML5 Interactive Showcase</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="切換深淺模式" aria-label="切換主題模式">
+          🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-chip">
+        <span class="pulse-dot"></span>
+        <span>收錄 3 款 AI 創作互動遊戲</span>
+      </div>
+      <h2>精選 <span class="hero-gradient-text">AI 互動小遊戲</span> 展覽館</h2>
+      <p>點擊作品卡片即可暢玩！涵蓋益智數學挑戰、幸運拉霸機與英語聽力冒險。</p>
+
+      <!-- Controls: Search & Filters -->
+      <div class="controls-wrapper">
+        <!-- Search Bar -->
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="搜尋小遊戲名稱、玩法或標籤..."
+            aria-label="搜尋遊戲"
+          />
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs" id="filterTabs">
+          <button class="filter-tab active" data-category="all">✨ 全部遊戲 (3)</button>
+          <button class="filter-tab" data-category="math">🔢 益智數學</button>
+          <button class="filter-tab" data-category="fun">🎰 幸運娛樂</button>
+          <button class="filter-tab" data-category="english">🎧 語言學習</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Games Grid -->
+    <section class="games-grid" id="gamesGrid">
+
+      <!-- Card 1: 琳鴿找堅果：數字比大小遊戲 -->
+      <article class="game-card" data-category="math" data-keywords="琳鴿找堅果 數字比大小 數學 鸚鵡 比大小 code_lingo927.html">
+        <div class="card-banner banner-theme-lingo">
+          <div class="banner-bg-pattern"></div>
+          <div class="card-hero-icon">🦜</div>
+          <span class="card-badge-top">數學益智</span>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="category-tag">🧠 數字比大小</span>
+            <span class="file-tag" title="code_lingo927.html">code_lingo927.html</span>
+          </div>
+          <h3 class="card-title">琳鴿找堅果：數字比大小遊戲</h3>
+          <p class="card-description">
+            與可愛的鸚鵡「琳鴿」一起進行趣味數字比較！運用敏捷的反應力判斷數字大小，收集堅果累積高分。
+          </p>
+          <div class="feature-chips">
+            <span class="feature-chip">🌰 堅果收集</span>
+            <span class="feature-chip">⚡ 即時判定</span>
+            <span class="feature-chip">✨ 趣味動畫</span>
+          </div>
+          <div class="card-actions">
+            <a href="code_lingo927.html" class="btn-play" title="直接開啟遊戲">
+              <span>開啟遊戲</span>
+              <span>🎮</span>
+            </a>
+            <button class="btn-preview" onclick="openPreview('code_lingo927.html', '琳鴿找堅果：數字比大小遊戲')" title="快速彈窗試玩">
+              👁️
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: 琳鴿的幸運拉霸機 -->
+      <article class="game-card" data-category="fun" data-keywords="琳鴿的幸運拉霸機 向宇宙下訂單 幸運 轉盤 拉霸機 音效 code_parrot0927.html">
+        <div class="card-banner banner-theme-slot">
+          <div class="banner-bg-pattern"></div>
+          <div class="card-hero-icon">🎰</div>
+          <span class="card-badge-top">幸運互動</span>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="category-tag">✨ 願望抽取</span>
+            <span class="file-tag" title="code_parrot0927.html">code_parrot0927.html</span>
+          </div>
+          <h3 class="card-title">琳鴿的幸運拉霸機</h3>
+          <p class="card-description">
+            向宇宙下訂單！拉動拉霸搖桿，轉動幸運輪盤，伴隨真實 Tone.js 豐富音效與粒子效果，抽取今日專屬好運與祝福。
+          </p>
+          <div class="feature-chips">
+            <span class="feature-chip">🎵 Tone.js 音效</span>
+            <span class="feature-chip">💫 宇宙祝福</span>
+            <span class="feature-chip">🎉 轉盤特效</span>
+          </div>
+          <div class="card-actions">
+            <a href="code_parrot0927.html" class="btn-play" title="直接開啟遊戲">
+              <span>開啟遊戲</span>
+              <span>🎮</span>
+            </a>
+            <button class="btn-preview" onclick="openPreview('code_parrot0927.html', '琳鴿的幸運拉霸機')" title="快速彈窗試玩">
+              👁️
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: 國小六年級動物英文聽力大冒險 -->
+      <article class="game-card" data-category="english" data-keywords="國小六年級動物英文聽力大冒險 英語 聽力 動物 測驗 grade_6_animal_english_quest (927).html">
+        <div class="card-banner banner-theme-quest">
+          <div class="banner-bg-pattern"></div>
+          <div class="card-hero-icon">🦥</div>
+          <span class="card-badge-top">英語學習</span>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="category-tag">🎧 聽力挑戰</span>
+            <span class="file-tag" title="grade_6_animal_english_quest (927).html">grade_6_animal_english_quest (927).html</span>
+          </div>
+          <h3 class="card-title">國小六年級動物英文聽力大冒險</h3>
+          <p class="card-description">
+            專為國小六年級設計的動物英文聽力測驗！點擊可愛動物聆聽標準發音，完成 10 道聽力挑戰並解鎖專屬通關獎牌。
+          </p>
+          <div class="feature-chips">
+            <span class="feature-chip">🗣️ 語音朗讀 TTS</span>
+            <span class="feature-chip">🦁 10 道動物關卡</span>
+            <span class="feature-chip">🏆 榮譽獎章</span>
+          </div>
+          <div class="card-actions">
+            <a href="grade_6_animal_english_quest (927).html" class="btn-play" title="直接開啟遊戲">
+              <span>開啟遊戲</span>
+              <span>🎮</span>
+            </a>
+            <button class="btn-preview" onclick="openPreview('grade_6_animal_english_quest (927).html', '國小六年級動物英文聽力大冒險')" title="快速彈窗試玩">
+              👁️
+            </button>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-state-icon">🔍</div>
+      <h3>找不到符合條件的小遊戲</h3>
+      <p>試試看其他關鍵字或切換分類標籤吧！</p>
+    </div>
+
+  </main>
+
+  <!-- Modal Game Preview -->
+  <div class="modal-overlay" id="gameModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">
+          <span>🎮</span>
+          <span id="modalGameName">遊戲試玩</span>
+        </div>
+        <div class="modal-controls">
+          <a id="modalOpenNewTab" href="#" target="_blank" class="modal-btn" title="在新分頁以全螢幕遊玩">
+            <span>全螢幕開啟</span>
+            <span>↗</span>
+          </a>
+          <button class="modal-close" onclick="closePreview()" title="關閉預覽" aria-label="關閉">✕</button>
+        </div>
+      </div>
+      <div class="modal-iframe-wrapper">
+        <iframe id="gameIframe" class="modal-iframe" src="about:blank" title="小遊戲預覽視窗"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-content">
+      <div class="footer-tags">
+        <span class="feature-chip">⚡ HTML5 + CSS3</span>
+        <span class="feature-chip">📱 響應式 RWD</span>
+        <span class="feature-chip">🎯 原生 JavaScript</span>
+      </div>
+      <p>© 2026 AI 小遊戲作品集0927 · 精選互動式網頁應用程式</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript Functionality -->
+  <script>
+    // Theme Toggle Functionality
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const htmlElement = document.documentElement;
+
+    // Load saved theme or default to dark
+    const savedTheme = localStorage.getItem('portfolio-theme') || 'dark';
+    setTheme(savedTheme);
+
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = htmlElement.classList.contains('light') ? 'light' : 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    });
+
+    function setTheme(theme) {
+      if (theme === 'light') {
+        htmlElement.classList.remove('dark');
+        htmlElement.classList.add('light');
+        themeToggleBtn.textContent = '☀️';
+        themeToggleBtn.title = '切換為深色模式';
+      } else {
+        htmlElement.classList.remove('light');
+        htmlElement.classList.add('dark');
+        themeToggleBtn.textContent = '🌙';
+        themeToggleBtn.title = '切換為淺色模式';
+      }
+      localStorage.setItem('portfolio-theme', theme);
+    }
+
+    // Filter & Search Functionality
+    const searchInput = document.getElementById('searchInput');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const gameCards = document.querySelectorAll('.game-card');
+    const emptyState = document.getElementById('emptyState');
+
+    let currentCategory = 'all';
+    let searchQuery = '';
+
+    // Filter tab click
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.getAttribute('data-category');
+        applyFilters();
+      });
+    });
+
+    // Search input
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      applyFilters();
+    });
+
+    function applyFilters() {
+      let visibleCount = 0;
+
+      gameCards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        const keywords = card.getAttribute('data-keywords').toLowerCase();
+        const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
+        const cardDesc = card.querySelector('.card-description').textContent.toLowerCase();
+
+        const matchCategory = (currentCategory === 'all') || (cardCategory === currentCategory);
+        const matchSearch = !searchQuery || 
+                            keywords.includes(searchQuery) || 
+                            cardTitle.includes(searchQuery) || 
+                            cardDesc.includes(searchQuery);
+
+        if (matchCategory && matchSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0) {
+        emptyState.style.display = 'block';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+
+    // Modal Preview Functionality
+    const gameModal = document.getElementById('gameModal');
+    const modalGameName = document.getElementById('modalGameName');
+    const gameIframe = document.getElementById('gameIframe');
+    const modalOpenNewTab = document.getElementById('modalOpenNewTab');
+
+    function openPreview(url, title) {
+      modalGameName.textContent = title;
+      gameIframe.src = url;
+      modalOpenNewTab.href = url;
+      gameModal.classList.add('active');
+      gameModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePreview() {
+      gameModal.classList.remove('active');
+      gameModal.setAttribute('aria-hidden', 'true');
+      gameIframe.src = 'about:blank';
+      document.body.style.overflow = '';
+    }
+
+    // Close on overlay click outside container
+    gameModal.addEventListener('click', (e) => {
+      if (e.target === gameModal) {
+        closePreview();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && gameModal.classList.contains('active')) {
+        closePreview();
+      }
+    });
+  </script>
+</body>
+</html>

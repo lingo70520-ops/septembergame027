@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>琳鴿找堅果：數字比大小遊戲</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for cute typography -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fef08a 0%, #bbf7d0 50%, #bae6fd 100%);
+            min-height: 100vh;
+        }
+        .cute-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        /* Bouncing animation for parrot mascot */
+        @keyframes bounce-gentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-gentle {
+            animation: bounce-gentle 2.5s ease-in-out infinite;
+        }
+        /* Shake animation for incorrect guesses */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 selection:bg-emerald-300">
+
+    <main class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-emerald-400 flex flex-col items-center transition-all duration-300">
+        
+        <!-- Header & Mascot -->
+        <header class="text-center mb-6">
+            <div class="inline-block relative mb-2">
+                <!-- Cute Parrot Avatar using SVG -->
+                <div class="w-28 h-28 mx-auto bg-emerald-100 rounded-full flex items-center justify-center border-4 border-emerald-400 shadow-inner animate-bounce-gentle overflow-hidden">
+                    <svg viewBox="0 0 200 200" class="w-24 h-24">
+                        <!-- Body -->
+                        <path d="M100 150 C70 150 50 120 60 90 C70 60 100 50 130 60 C155 70 165 95 160 120 C155 140 135 150 100 150 Z" fill="#34d399"/>
+                        <!-- Wing -->
+                        <path d="M110 90 C120 100 130 120 120 140 C110 130 95 110 110 90 Z" fill="#059669"/>
+                        <!-- Head / Crest -->
+                        <circle cx="120" cy="75" r="30" fill="#34d399"/>
+                        <path d="M135 55 L150 40 L140 65 Z" fill="#fbbf24"/>
+                        <!-- Beak -->
+                        <path d="M145 75 L165 80 L145 90 Z" fill="#f59e0b"/>
+                        <!-- Eye -->
+                        <circle cx="125" cy="70" r="5" fill="#1f2937"/>
+                        <circle cx="127" cy="68" r="2" fill="#ffffff"/>
+                        <!-- Cheeks -->
+                        <circle cx="132" cy="85" r="4" fill="#f43f5e" opacity="0.6"/>
+                    </svg>
+                </div>
+                <!-- Status Badge -->
+                <span class="absolute -bottom-2 right-2 bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full shadow-md border border-amber-200 cute-font">
+                    亞馬遜鸚鵡 琳鴿
+                </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-emerald-800 cute-font tracking-wide mt-3">
+                琳鴿找堅果大冒險
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1">
+                我把最愛的堅果藏在 <span class="font-bold text-emerald-600">1 到 100 號</span> 的其中一個罐子裡囉！
+            </p>
+        </header>
+
+        <!-- Game Dialogue / Message Box -->
+        <section id="dialogueBox" class="w-full bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-2xl p-4 mb-6 text-center shadow-sm transition-all duration-300">
+            <div class="flex items-start space-x-3">
+                <span class="text-2xl">🦜</span>
+                <p id="dialogueText" class="text-emerald-900 font-medium text-sm sm:text-base leading-relaxed text-left flex-1">
+                    呱！快來猜猜看堅果在哪個罐子裡吧？範圍是 1 到 100 唷！
+                </p>
+            </div>
+        </section>
+
+        <!-- Game Controls & Input Area -->
+        <section id="gameArea" class="w-full flex flex-col items-center space-y-4">
+            <div class="flex items-center justify-between w-full bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 text-xs sm:text-sm text-gray-700">
+                <span>目前範圍：<strong id="rangeDisplay" class="text-emerald-600">1 ~ 100</strong></span>
+                <span>已猜次數：<strong id="guessCount" class="text-amber-600">0</strong> 次</span>
+            </div>
+
+            <!-- Input and Submit -->
+            <div class="flex w-full space-x-2">
+                <input 
+                    type="number" 
+                    id="userGuess" 
+                    min="1" 
+                    max="100" 
+                    placeholder="輸入 1-100 數字" 
+                    class="flex-1 bg-white border-2 border-emerald-300 focus:border-emerald-500 focus:outline-none rounded-2xl px-4 py-3 text-lg font-bold text-center text-gray-800 shadow-inner transition-all"
+                >
+                <button 
+                    id="submitBtn" 
+                    onclick="makeGuess()" 
+                    class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold px-6 py-3 rounded-2xl shadow-lg transform active:scale-95 transition-all cute-font text-lg tracking-wider cursor-pointer"
+                >
+                    猜！
+                </button>
+            </div>
+        </section>
+
+        <!-- Win / Reset Area (Hidden Initially) -->
+        <section id="restartArea" class="w-full mt-6 hidden flex-col items-center">
+            <button 
+                onclick="resetGame()" 
+                class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform active:scale-95 transition-all cute-font text-lg tracking-wider cursor-pointer flex items-center justify-center space-x-2"
+            >
+                <span>🥜</span>
+                <span>再玩一次冒險！</span>
+            </button>
+        </section>
+
+        <!-- Footer Credits -->
+        <footer class="mt-6 text-center text-xs text-gray-400 flex items-center justify-center space-x-2">
+            <span>享受與琳鴿的互動遊戲 ✨</span>
+            <!-- Settings Gear Button for Cute BGM -->
+            <button id="bgmToggleBtn" onclick="toggleBGM()" title="播放/暫停可愛音樂" class="p-1.5 rounded-full hover:bg-emerald-100 text-emerald-600 transition-all transform hover:rotate-90 duration-300 focus:outline-none cursor-pointer" aria-label="切換音樂">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </footer>
+    </main>
+
+    <script>
+        // Game State Variables
+        let secretNutNumber = Math.floor(Math.random() * 100) + 1;
+        let minRange = 1;
+        let maxRange = 100;
+        let attempts = 0;
+        let isGameOver = false;
+
+        // DOM Element references
+        const userGuessInput = document.getElementById('userGuess');
+        const dialogueText = document.getElementById('dialogueText');
+        const dialogueBox = document.getElementById('dialogueBox');
+        const rangeDisplay = document.getElementById('rangeDisplay');
+        const guessCountDisplay = document.getElementById('guessCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const restartArea = document.getElementById('restartArea');
+        const bgmToggleBtn = document.getElementById('bgmToggleBtn');
+
+        // Web Audio API BGM variables
+        let audioCtx = null;
+        let isBgmPlaying = false;
+        let bgmInterval = null;
+
+        // Cute melody notes (frequencies in Hz) - cheerful pentatonic tune
+        const melodyNotes = [523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 659.25, 587.33];
+        let noteIndex = 0;
+
+        function toggleBGM() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            isBgmPlaying = !isBgmPlaying;
+
+            if (isBgmPlaying) {
+                bgmToggleBtn.classList.add('bg-emerald-200', 'ring-2', 'ring-emerald-400');
+                startBgmLoop();
+            } else {
+                bgmToggleBtn.classList.remove('bg-emerald-200', 'ring-2', 'ring-emerald-400');
+                stopBgmLoop();
+            }
+        }
+
+        function startBgmLoop() {
+            if (bgmInterval) clearInterval(bgmInterval);
+            
+            // Play a note every 400ms for a playful background tempo
+            bgmInterval = setInterval(() => {
+                if (!isBgmPlaying || !audioCtx) return;
+                
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    // Sine wave for soft, cute music box tone
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(melodyNotes[noteIndex], audioCtx.currentTime);
+
+                    // Envelope for gentle plucking sound
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.35);
+
+                    noteIndex = (noteIndex + 1) % melodyNotes.length;
+                } catch (e) {
+                    console.error("Audio playback error:", e);
+                }
+            }, 400);
+        }
+
+        function stopBgmLoop() {
+            if (bgmInterval) {
+                clearInterval(bgmInterval);
+                bgmInterval = null;
+            }
+        }
+
+        // Listen for Enter key to submit
+        userGuessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isGameOver) {
+                makeGuess();
+            }
+        });
+
+        // Core Guessing Logic
+        function makeGuess() {
+            if (isGameOver) return;
+
+            const guessVal = parseInt(userGuessInput.value);
+
+            // Validation check
+            if (isNaN(guessVal) || guessVal < minRange || guessVal > maxRange) {
+                triggerShake();
+                dialogueText.innerHTML = `呱！請輸入 <strong class="text-rose-600">${minRange} 到 ${maxRange}</strong> 之間的有效數字啦！`;
+                return;
+            }
+
+            attempts++;
+            guessCountDisplay.textContent = attempts;
+            userGuessInput.value = '';
+            userGuessInput.focus();
+
+            // Evaluate guess against secret number
+            if (guessVal === secretNutNumber) {
+                // Victory condition
+                isGameOver = true;
+                dialogueText.innerHTML = `🎉 恭喜！琳鴿找到堅果了！<br><span class="text-xs text-emerald-700 font-normal">你總共猜了 ${attempts} 次就幫琳鴿找回最愛的堅果囉！</span>`;
+                dialogueBox.className = "w-full bg-amber-100 border-2 border-amber-400 rounded-2xl p-4 mb-6 text-center shadow-md animate-bounce-gentle";
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                userGuessInput.disabled = true;
+                restartArea.classList.remove('hidden');
+                restartArea.classList.add('flex');
+            } else if (guessVal < secretNutNumber) {
+                // Too small
+                if (guessVal >= minRange) {
+                    minRange = guessVal + 1;
+                }
+                triggerShake();
+                dialogueText.innerHTML = `呱！太小啦！堅果藏在更後面的罐子裡，範圍在 <strong class="text-blue-600">${minRange} ~ ${maxRange}</strong> 罐啦！`;
+                rangeDisplay.textContent = `${minRange} ~ ${maxRange}`;
+            } else {
+                // Too big
+                if (guessVal <= maxRange) {
+                    maxRange = guessVal - 1;
+                }
+                triggerShake();
+                dialogueText.innerHTML = `呱！太大啦！堅果在前面的罐子裡，範圍縮小到 <strong class="text-purple-600">${minRange} ~ ${maxRange}</strong> 罐囉！`;
+                rangeDisplay.textContent = `${minRange} ~ ${maxRange}`;
+            }
+        }
+
+        // Trigger visual shake effect on dialogue box
+        function triggerShake() {
+            dialogueBox.classList.remove('animate-shake');
+            void dialogueBox.offsetWidth; // Trigger reflow
+            dialogueBox.classList.add('animate-shake');
+        }
+
+        // Reset game state for a new round
+        function resetGame() {
+            secretNutNumber = Math.floor(Math.random() * 100) + 1;
+            minRange = 1;
+            maxRange = 100;
+            attempts = 0;
+            isGameOver = false;
+
+            guessCountDisplay.textContent = '0';
+            rangeDisplay.textContent = '1 ~ 100';
+            dialogueText.innerHTML = `呱！新的一輪開始囉！堅果已經藏好了，快來猜猜看在哪個罐子裡吧！`;
+            dialogueBox.className = "w-full bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-2xl p-4 mb-6 text-center shadow-sm transition-all duration-300";
+            
+            userGuessInput.disabled = false;
+            userGuessInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            restartArea.classList.remove('flex');
+            restartArea.classList.add('hidden');
+            userGuessInput.focus();
+        }
+    </script>
+</body>
+</html>
