@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>國小六年級動物英文聽力大冒險 - Grade 6 English Quest</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes bounceTap {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.22) rotate(-6deg); }
+      70% { transform: scale(0.95) rotate(3deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .animal-bounce {
+      animation: bounceTap 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes floatSoft {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    .trophy-float {
+      animation: floatSoft 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-amber-50 text-slate-900 min-h-screen flex items-center justify-center p-3 sm:p-6 font-sans font-medium">
+
+  <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl shadow-amber-200/40 border-2 border-amber-200/80 p-5 sm:p-8 flex flex-col gap-5 relative overflow-hidden">
+
+    <div id="toast-message" class="hidden absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg transition-all z-50 flex items-center gap-2">
+      <span id="toast-text">通知訊息</span>
+    </div>
+
+    <div id="quiz-view" class="flex flex-col gap-5">
+      <div class="flex flex-col gap-2">
+        <div class="flex justify-between items-center text-sm sm:text-base font-black text-slate-700">
+          <span id="question-counter" class="text-amber-900 bg-amber-100 px-3.5 py-1 rounded-full border border-amber-300">第 1 / 10 題</span>
+          <span class="flex items-center gap-1 text-amber-800">🎧 聽力挑戰模式</span>
+        </div>
+        <div class="w-full bg-amber-200/70 h-3.5 rounded-full overflow-hidden">
+          <div id="progress-fill" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 h-full w-[10%] transition-all duration-300 rounded-full"></div>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center justify-center gap-1 py-1">
+        <div 
+          id="animal-avatar" 
+          class="text-8xl sm:text-9xl cursor-pointer select-none transition-transform hover:scale-110 active:scale-95"
+          onclick="handleAnimalTap()"
+          title="點我聽題目發音！"
+        >
+          🦥
+        </div>
+        <h2 id="animal-name" class="text-2xl sm:text-3xl font-black text-slate-900 tracking-wide mt-2">
+          樹懶 Sloth
+        </h2>
+        <span class="text-xs sm:text-sm text-amber-800/80 font-bold">（點擊動物也可朗讀題目喔！）</span>
+      </div>
+
+      <div class="flex justify-center gap-3 flex-wrap">
+        <button 
+          onclick="speakCurrentQuestion(0.95)" 
+          class="flex items-center gap-2 bg-amber-100 hover:bg-amber-200 active:scale-95 border-2 border-amber-300 text-amber-950 font-black px-5 py-2.5 rounded-full text-sm sm:text-base transition duration-150 shadow-sm"
+        >
+          <span>🔊</span> 正常語速 (0.95x)
+        </button>
+        <button 
+          onclick="speakCurrentQuestion(0.75)" 
+          class="flex items-center gap-2 bg-yellow-100 hover:bg-yellow-200 active:scale-95 border-2 border-yellow-300 text-yellow-950 font-black px-5 py-2.5 rounded-full text-sm sm:text-base transition duration-150 shadow-sm"
+        >
+          <span>🐢</span> 慢速重聽 (0.75x)
+        </button>
+      </div>
+
+      <div class="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 text-center flex flex-col items-center justify-center gap-3 min-h-[90px]">
+        <button 
+          id="toggle-hint-btn" 
+          onclick="toggleHintVisibility()" 
+          class="text-amber-800 hover:text-amber-900 text-sm sm:text-base font-black underline underline-offset-4 cursor-pointer focus:outline-none"
+        >
+          👁️ 顯示題目英文文字
+        </button>
+        <p id="question-text" class="hidden text-base sm:text-xl font-black text-slate-900 leading-relaxed max-w-xl">
+          Why do you think some students find it difficult to wake up early on Monday mornings?
+        </p>
+      </div>
+
+      <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+        <!-- Options rendered dynamically via JavaScript -->
+      </div>
+
+      <div class="flex justify-between items-center gap-3 pt-2">
+        <button 
+          id="btn-prev" 
+          onclick="navigateQuestion(currentIndex - 1)" 
+          disabled
+          class="w-1/2 py-3.5 px-4 rounded-xl font-black text-slate-500 bg-amber-100/70 hover:bg-amber-200/80 disabled:opacity-40 disabled:cursor-not-allowed transition text-base"
+        >
+          ⬅️ 上一題
+        </button>
+        <button 
+          id="btn-next" 
+          onclick="navigateQuestion(currentIndex + 1)" 
+          class="w-1/2 py-3.5 px-4 rounded-xl font-black text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.98] transition shadow-md shadow-amber-300/80 text-base"
+        >
+          下一題 ➡️
+        </button>
+      </div>
+    </div>
+
+    <div id="completion-view" class="hidden flex-col items-center text-center gap-6 py-6">
+      <div class="text-7xl sm:text-8xl trophy-float select-none">🏆 🌟 🎉</div>
+      <div class="flex flex-col gap-2">
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Fantastic Job! 挑戰完成！</h2>
+        <p class="text-slate-700 text-base sm:text-lg font-bold max-w-md mx-auto leading-relaxed">
+          你已經順利完成了全部 10 隻動物提出的六年級口說挑戰問題！<br>
+          堅持多聽、多開口大聲唸出來，你的英語表達會越來越流利自信！
+        </p>
+      </div>
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 w-full max-w-md text-left">
+        <h3 class="text-amber-950 font-black mb-1.5 text-center text-base">🎯 口說練習回顧</h3>
+        <p class="text-sm sm:text-base font-bold text-amber-900 leading-relaxed text-center">
+          涵蓋「同理分享、環保實踐、自主規劃、科技利弊與團隊合作」六年級深度口說表達。
+        </p>
+      </div>
+      <button 
+        onclick="restartQuiz()" 
+        class="bg-amber-600 hover:bg-amber-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg shadow-amber-300 transition active:scale-95 text-lg"
+      >
+        再挑戰一次 🔄
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    const questions = [
+      {
+        animal: "🦦",
+        animalName: "水獺 Sea Otter",
+        question: "How do you usually cheer up a classmate when they are feeling down?",
+        options: [
+          "I listen to them patiently and give them a warm, encouraging smile.",
+          "I share some tasty snacks or yummy candies to brighten their mood.",
+          "I tell a few funny jokes to make them laugh and forget their sadness.",
+          "I invite them to join our favorite ball game on the playground."
+        ]
+      },
+      {
+        animal: "🦩",
+        animalName: "紅鶴 Flamingo",
+        question: "What small eco-friendly habit do you practice every day to protect our planet?",
+        options: [
+          "I always carry my own reusable water bottle and shopping bag.",
+          "I make sure to turn off the lights and air conditioner when leaving.",
+          "I sort recyclable trash carefully into paper, plastic, and metal cans.",
+          "I finish all the food on my plate so nothing goes to waste."
+        ]
+      },
+      {
+        animal: "🦫",
+        animalName: "河狸 Beaver",
+        question: "If you were the school principal for one single day, what rule would you create?",
+        options: [
+          "I would extend our recess time to thirty minutes between classes.",
+          "I would replace all traditional textbooks with fun, interactive tablets.",
+          "I would introduce Pet Day so everyone could bring their furry friends.",
+          "I would let students choose delicious food for cafeteria lunch."
+        ]
+      },
+      {
+        animal: "🦎",
+        animalName: "變色龍 Chameleon",
+        question: "Do you think watching English animations or movies helps improve your listening skills?",
+        options: [
+          "Definitely, because I can hear authentic daily accents and natural slangs.",
+          "Yes, it makes memorizing new vocabulary much more entertaining and fun.",
+          "Somewhat, but only if I pay close attention to the English subtitles.",
+          "I think reading storybooks and speaking aloud might be even more useful."
+        ]
+      },
+      {
+        animal: "🦭",
+        animalName: "海豹 Seal",
+        question: "What is the most memorable gift you have ever received on your birthday?",
+        options: [
+          "A heartwarming handwritten birthday letter from my parents.",
+          "A wonderful bicycle that allows me to explore parks on weekends.",
+          "An exciting board game that I often play with best friends.",
+          "A fascinating science encyclopedia full of colorful photographs."
+        ]
+      },
+      {
+        animal: "🐿️",
+        animalName: "松鼠 Squirrel",
+        question: "How do you usually manage your pocket money or Chinese New Year red envelope money?",
+        options: [
+          "I save most of it in my bank account for future educational goals.",
+          "I spend a small portion on stationery and put the rest in my piggy bank.",
+          "I ask my parents for advice on how to invest or manage it wisely.",
+          "I save up patiently until I can afford a valuable dream item."
+        ]
+      },
+      {
+        animal: "🦚",
+        animalName: "孔雀 Peacock",
+        question: "If your class was having an international food festival, what dish would you recommend?",
+        options: [
+          "Refreshing Taiwanese bubble milk tea with chewy tapioca pearls.",
+          "Crispy pan-fried scallion pancakes with flavorful garlic soy sauce.",
+          "Savory braised pork rice garnished with tasty pickled cucumbers.",
+          "Sweet, colorful shaved ice topped with fresh ripe mango chunks."
+        ]
+      },
+      {
+        animal: "🦙",
+        animalName: "羊駝 Alpaca",
+        question: "When you work on a group project, what role do you usually enjoy taking?",
+        options: [
+          "Being the team leader who coordinates and assigns tasks fairly.",
+          "Being the creative designer who prepares beautiful slides and posters.",
+          "Being the researcher who searches for accurate facts and information.",
+          "Being the brave speaker who presents our group findings on stage."
+        ]
+      },
+      {
+        animal: "🐬",
+        animalName: "白海豚 White Dolphin",
+        question: "Do you think smartphones bring students more advantages or more distractions?",
+        options: [
+          "More advantages, because we can search for learning resources instantly.",
+          "More distractions, because social media apps can easily waste our time.",
+          "It depends entirely on whether students have enough self-discipline.",
+          "Both; it is a powerful tool if we set clear time limits every day."
+        ]
+      },
+      {
+        animal: "🦉",
+        animalName: "雪鴞 Snowy Owl",
+        question: "What advice would you give to fourth-grade juniors about junior high school preparation?",
+        options: [
+          "Build consistent daily study habits and never leave homework to the last minute.",
+          "Read extensively in both Chinese and English to broaden your horizons.",
+          "Cherish every joyful moment with elementary school teachers and friends.",
+          "Exercise regularly to build up great physical strength and stamina."
+        ]
+      }
+    ];
+
+    const praises = [
+      "Awesome choice!",
+      "Great job!",
+      "Well thought out!",
+      "Excellent answer!",
+      "Super clever!"
+    ];
+
+    let currentIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let isHintVisible = false;
+
+    function showToast(message) {
+      const toast = document.getElementById("toast-message");
+      const toastText = document.getElementById("toast-text");
+      toastText.innerText = message;
+      toast.classList.remove("hidden");
+      setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 2500);
+    }
+
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      
+      // Update counter and progress bar
+      document.getElementById("question-counter").innerText = `第 ${currentIndex + 1} / ${questions.length} 題`;
+      const progressPercent = ((currentIndex + 1) / questions.length) * 100;
+      document.getElementById("progress-fill").style.width = `${progressPercent}%`;
+
+      // Update animal
+      document.getElementById("animal-avatar").innerText = q.animal;
+      document.getElementById("animal-name").innerText = q.animalName;
+
+      // Update question text and toggle state
+      const textElem = document.getElementById("question-text");
+      textElem.innerText = q.question;
+      const toggleBtn = document.getElementById("toggle-hint-btn");
+      if (isHintVisible) {
+        textElem.classList.remove("hidden");
+        toggleBtn.innerText = "🙈 隱藏題目英文文字";
+      } else {
+        textElem.classList.add("hidden");
+        toggleBtn.innerText = "👁️ 顯示題目英文文字";
+      }
+
+      // Render multiple choice options
+      const container = document.getElementById("options-container");
+      container.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+
+      q.options.forEach((optionText, optIndex) => {
+        const isSelected = userAnswers[currentIndex] === optIndex;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `flex items-start gap-3 p-3.5 sm:p-4 rounded-xl border-2 text-left text-sm sm:text-base font-bold transition-all active:scale-[0.98] ${
+          isSelected 
+            ? "border-amber-500 bg-amber-100/90 text-amber-950 font-black shadow-sm" 
+            : "border-amber-200/90 bg-white hover:border-amber-400 hover:bg-amber-50/60 text-slate-800"
+        }`;
+
+        const badgeClass = isSelected 
+          ? "bg-amber-600 text-white font-black" 
+          : "bg-amber-100 text-amber-900 font-black";
+
+        btn.innerHTML = `
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 mt-0.5 ${badgeClass}">
+            ${letters[optIndex]}
+          </span>
+          <span class="leading-snug">${optionText}</span>
+        `;
+
+        btn.onclick = () => selectOption(optIndex);
+        container.appendChild(btn);
+      });
+
+      // Update navigation buttons
+      document.getElementById("btn-prev").disabled = currentIndex === 0;
+      document.getElementById("btn-next").innerText = currentIndex === questions.length - 1 ? "查看成果 🏁" : "下一題 ➡️";
+    }
+
+    function toggleHintVisibility() {
+      isHintVisible = !isHintVisible;
+      renderQuestion();
+    }
+
+    function handleAnimalTap() {
+      const avatar = document.getElementById("animal-avatar");
+      avatar.classList.remove("animal-bounce");
+      void avatar.offsetWidth; // Trigger reflow
+      avatar.classList.add("animal-bounce");
+      speakCurrentQuestion(0.95);
+    }
+
+    // 智能挑選好聽、自然的美式英語女聲
+    function getPreferredFemaleVoice() {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return null;
+
+      const preferredNames = [
+        "Google US English",           // Chrome 溫和清晰女聲
+        "Samantha",                    // Apple / iOS 經典自然美語女聲
+        "Ava",                         // Apple 高音質神經女聲
+        "Victoria",                    // Apple 溫雅女聲
+        "Microsoft Jenny Online (Natural)", // Edge / Windows 頂級自然女聲
+        "Microsoft Aria Online (Natural)",  // Edge / Windows 頂級自然女聲
+        "Microsoft Zira",              // Windows 內建女聲
+        "Zira"
+      ];
+
+      for (const name of preferredNames) {
+        const found = voices.find(v => v.name.includes(name));
+        if (found) return found;
+      }
+
+      const femaleEn = voices.find(v => 
+        (v.lang.startsWith("en") || v.lang.replace('_', '-').startsWith("en-US")) && 
+        v.name.toLowerCase().includes("female")
+      );
+      if (femaleEn) return femaleEn;
+
+      const enUsVoice = voices.find(v => v.lang === "en-US" || v.lang === "en_US");
+      if (enUsVoice) return enUsVoice;
+
+      return voices.find(v => v.lang.startsWith("en")) || voices[0];
+    }
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        getPreferredFemaleVoice();
+      };
+    }
+
+    function speakCurrentQuestion(rate = 0.95) {
+      if (!('speechSynthesis' in window)) {
+        showToast("⚠️ 您的瀏覽器暫不支援語音朗讀功能");
+        return;
+      }
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(questions[currentIndex].question);
+        utterance.lang = "en-US";
+        utterance.rate = rate;
+        utterance.pitch = 1.05; // 親切、清晰明快的女聲調性
+        
+        const voice = getPreferredFemaleVoice();
+        if (voice) {
+          utterance.voice = voice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.error("Speech Synthesis Error:", err);
+      }
+    }
+
+    function selectOption(index) {
+      userAnswers[currentIndex] = index;
+      renderQuestion();
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+        const utterance = new SpeechSynthesisUtterance(randomPraise);
+        utterance.lang = "en-US";
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1;
+        
+        const voice = getPreferredFemaleVoice();
+        if (voice) {
+          utterance.voice = voice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function navigateQuestion(index) {
+      if (index >= questions.length) {
+        showCompletionScreen();
+        return;
+      }
+      if (index < 0) return;
+
+      currentIndex = index;
+      isHintVisible = false; // 切換題目預設隱藏文字以維持聽力挑戰
+      renderQuestion();
+
+      setTimeout(() => {
+        speakCurrentQuestion(0.95);
+      }, 250);
+    }
+
+    function showCompletionScreen() {
+      document.getElementById("quiz-view").classList.add("hidden");
+      const compView = document.getElementById("completion-view");
+      compView.classList.remove("hidden");
+      compView.classList.add("flex");
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance("Congratulations! You completed all ten questions! Excellent work!");
+        utterance.lang = "en-US";
+        utterance.rate = 0.95;
+        utterance.pitch = 1.05;
+        const voice = getPreferredFemaleVoice();
+        if (voice) {
+          utterance.voice = voice;
+        }
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function restartQuiz() {
+      currentIndex = 0;
+      userAnswers.fill(null);
+      isHintVisible = false;
+
+      document.getElementById("completion-view").classList.add("hidden");
+      document.getElementById("completion-view").classList.remove("flex");
+      document.getElementById("quiz-view").classList.remove("hidden");
+
+      renderQuestion();
+      speakCurrentQuestion(0.95);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderQuestion();
+    });
+  </script>
+</body>
+</html>
